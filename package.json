@@ -2,6 +2,8 @@
   "name": "rank-review",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://athreya001.github.io/rank-review/",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -10,7 +12,7 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
+    "vite": "^8.1.0",
     "vitest": "^4.0.13"
   }
 }
