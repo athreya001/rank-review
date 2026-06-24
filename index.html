@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23176b5d'/%3E%3Cpath d='M8 18l5 5 11-14' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <title>Review Confidence Ranker</title>
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="app-header">
+        <div>
+          <h1>Review Confidence Ranker</h1>
+          <p>Compare choices by rating confidence.</p>
+        </div>
+        <div class="header-actions">
+          <button class="button secondary" id="sampleButton" type="button">Sample</button>
+          <button class="button ghost" id="clearButton" type="button">Clear</button>
+        </div>
+      </header>
+
+      <main class="workspace" aria-live="polite">
+        <section class="panel input-panel" aria-labelledby="dataHeading">
+          <div class="panel-header">
+            <div>
+              <h2 id="dataHeading">Options</h2>
+              <p>Enter each choice with its average rating and number of reviews.</p>
+            </div>
+            <button class="button primary" id="rankButton" type="button">Rank</button>
+          </div>
+
+          <div class="entry-header">
+            <span>Choices to compare</span>
+            <button class="button ghost compact" id="addRowButton" type="button">Add option</button>
+          </div>
+
+          <div class="entry-table-frame">
+            <table class="entry-table">
+              <thead>
+                <tr>
+                  <th scope="col">Option name</th>
+                  <th scope="col">Average rating</th>
+                  <th scope="col">Reviews</th>
+                  <th scope="col">Remove</th>
+                </tr>
+              </thead>
+              <tbody id="entryRows"></tbody>
+            </table>
+          </div>
+
+          <p class="input-hint">
+            Use the rating shown on the review site, then enter how many reviews produced that average.
+          </p>
+
+          <div class="assumptions-panel" aria-labelledby="assumptionsHeading">
+            <div class="scale-control">
+              <span class="scale-control-title">Rating scale</span>
+              <div class="scale-input-grid" aria-describedby="ratingScaleHint">
+                <label>
+                  Lowest possible rating
+                  <input id="scaleMinInput" type="number" step="0.1" value="1" inputmode="decimal" />
+                </label>
+                <label>
+                  Highest possible rating
+                  <input id="scaleMaxInput" type="number" step="0.1" value="5" inputmode="decimal" />
+                </label>
+              </div>
+              <p id="ratingScaleHint">Enter the lowest and highest possible values for the ratings you enter.</p>
+            </div>
+
+            <div class="assumptions-copy">
+              <h3 id="assumptionsHeading">Assumptions</h3>
+              <ul class="assumptions-list">
+                <li>The typical rating is calculated from your options, weighted by review count.</li>
+                <li>Prior strength is chosen automatically from the number of reviews.</li>
+                <li>The conservative score uses a fixed 95% cautious lower bound.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel results-panel" aria-labelledby="resultsHeading">
+          <div class="panel-header">
+            <div>
+              <h2 id="resultsHeading">Results</h2>
+              <p id="settingsSummary">Run a comparison to calculate ranks.</p>
+            </div>
+          </div>
+
+          <div id="errorBox" class="error-box" role="alert" hidden></div>
+
+          <div id="resultsContent" class="results-content" hidden>
+            <div class="recommendation">
+              <span>Conservative pick</span>
+              <strong id="recommendationText"></strong>
+            </div>
+
+            <div class="table-grid">
+              <section class="table-section" aria-labelledby="conservativeHeading">
+                <h3 id="conservativeHeading">Conservative rank</h3>
+                <div class="table-frame">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Option</th>
+                        <th scope="col">Raw</th>
+                        <th scope="col">Move</th>
+                        <th scope="col">Rating</th>
+                        <th scope="col">Reviews</th>
+                        <th scope="col">Lower</th>
+                        <th scope="col">Adjusted</th>
+                        <th scope="col">Why</th>
+                      </tr>
+                    </thead>
+                    <tbody id="conservativeBody"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="table-section" aria-labelledby="balancedHeading">
+                <h3 id="balancedHeading">Balanced rank</h3>
+                <div class="table-frame">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Option</th>
+                        <th scope="col">Raw</th>
+                        <th scope="col">Move</th>
+                        <th scope="col">Rating</th>
+                        <th scope="col">Reviews</th>
+                        <th scope="col">Adjusted</th>
+                        <th scope="col">Lower</th>
+                        <th scope="col">Why</th>
+                      </tr>
+                    </thead>
+                    <tbody id="balancedBody"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+
+            <div class="detail-grid">
+              <section aria-labelledby="settingsHeading">
+                <h3 id="settingsHeading">Settings</h3>
+                <dl id="settingsList" class="definition-list"></dl>
+              </section>
+              <section aria-labelledby="notesHeading">
+                <h3 id="notesHeading">Notes</h3>
+                <ul id="notesList" class="notes-list"></ul>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
