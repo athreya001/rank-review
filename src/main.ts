@@ -2,20 +2,11 @@ import "./styles.css";
 import { createRankingViewModel, type RankingRow } from "./presentation";
 import { rankItems, type RankingOptions, type ReviewItem } from "./ranking";
 
-const sampleItems: ReviewItem[] = [
-  { name: "ApplyAll", rating: 4.8, reviews: 65 },
-  { name: "TalentDesk", rating: 4.3, reviews: 816 },
-  { name: "ReviewPilot", rating: 4.6, reviews: 142 },
-  { name: "VendorScout", rating: 4.7, reviews: 44 },
-  { name: "TrustLayer", rating: 4.4, reviews: 1300 },
-];
-
 const emptyRows = 3;
 
 const entryRows = element<HTMLTableSectionElement>("entryRows");
 const rankButton = element<HTMLButtonElement>("rankButton");
 const addRowButton = element<HTMLButtonElement>("addRowButton");
-const sampleButton = element<HTMLButtonElement>("sampleButton");
 const clearButton = element<HTMLButtonElement>("clearButton");
 const scaleMinInput = element<HTMLInputElement>("scaleMinInput");
 const scaleMaxInput = element<HTMLInputElement>("scaleMaxInput");
@@ -341,11 +332,6 @@ function runRanking({ allowEmpty = false }: { allowEmpty?: boolean } = {}) {
     showError(error instanceof Error ? error.message : "Could not rank these options.");
   }
 }
-
-sampleButton.addEventListener("click", () => {
-  renderEntryRows(sampleItems);
-  runRanking();
-});
 
 clearButton.addEventListener("click", () => {
   renderEntryRows(Array.from({ length: emptyRows }, () => ({})));
