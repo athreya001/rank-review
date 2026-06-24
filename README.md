@@ -65,7 +65,7 @@ options, ratings, or review counts you enter.
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
