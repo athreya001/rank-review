@@ -21,7 +21,7 @@ describe("createRankingViewModel", () => {
 
     expect(viewModel.conservativeRows[0].name).toBe("Reliable Choice");
     expect(viewModel.balancedRows[0].name).toBe("Reliable Choice");
-    expect(viewModel.recommendation).toContain("Reliable Choice");
+    expect(viewModel.recommendation).toBe("Reliable Choice ranks first by conservative score.");
     expect(viewModel.balancedRows).toContainEqual(
       expect.objectContaining({
         name: "Reliable Choice",
@@ -30,9 +30,29 @@ describe("createRankingViewModel", () => {
         explanation: expect.stringContaining("rose #2 to #1"),
       }),
     );
-    expect(viewModel.notes).toContain(
-      "The lower bound is approximate because only average rating and review count are used.",
-    );
+    expect(viewModel.settings).toContainEqual(["Penalty multiplier", "1.645"]);
+  });
+
+  it("names all tied leaders regardless of entry order and excludes lower ranks", () => {
+    const items = [
+      { name: "Birch", rating: 4.5, reviews: 100 },
+      { name: "Alder", rating: 4.5, reviews: 100 },
+      { name: "Cedar", rating: 4.5, reviews: 100 },
+      { name: "Elm", rating: 3.5, reviews: 100 },
+    ];
+    const expected = "Alder, Birch and Cedar share first place by conservative score.";
+    for (const order of [items, [...items].reverse()]) {
+      expect(createRankingViewModel(rankItems(order)).recommendation).toBe(expected);
+    }
+  });
+
+  it("reports shared first place when different scores are a practical tie", () => {
+    const view = createRankingViewModel(rankItems([
+      { name: "East", rating: 4.5, reviews: 100 },
+      { name: "West", rating: 4.52, reviews: 100 },
+    ]));
+    expect(view.conservativeRows[0].lowerBound).not.toBe(view.conservativeRows[1].lowerBound);
+    expect(view.recommendation).toBe("East and West share first place by conservative score.");
   });
 
   it("surfaces the two-item prior caveat when the comparison is sparse", () => {

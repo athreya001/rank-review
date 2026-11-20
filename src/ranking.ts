@@ -246,7 +246,7 @@ function resolveOptions(options: RankingOptions): ResolvedOptions {
 
 function assignRanks(
   values: Array<[number, number]>,
-  practicalTieDelta = PRACTICAL_TIE_DELTA,
+  tieCutoff: number,
 ): {
   ranks: Map<number, number>;
   tieGroups: Map<number, number>;
@@ -260,7 +260,7 @@ function assignRanks(
 
   sortedValues.forEach(([index, value], positionIndex) => {
     const position = positionIndex + 1;
-    if (groupAnchorValue === undefined || Math.abs(groupAnchorValue - value) > practicalTieDelta) {
+    if (groupAnchorValue === undefined || Math.abs(groupAnchorValue - value) > tieCutoff) {
       currentRank = position;
       currentGroup += 1;
       groupAnchorValue = value;
@@ -270,10 +270,6 @@ function assignRanks(
   });
 
   return { ranks, tieGroups };
-}
-
-function practicalTieDeltaForScale(scaleMin: number, scaleMax: number): number {
-  return (PRACTICAL_TIE_DELTA / DEFAULT_SCALE_WIDTH) * (scaleMax - scaleMin);
 }
 
 function inverseNormalCdf(probability: number): number {
@@ -333,7 +329,16 @@ export function rankItems(items: ReviewItem[], options: RankingOptions = {}): Ra
   const priorCountSource =
     resolved.priorCount !== undefined ? "provided" : items.length >= 5 ? "estimated" : "default";
   const zScore = inverseNormalCdf(resolved.confidence);
-  const practicalTieDelta = practicalTieDeltaForScale(resolved.scaleMin, resolved.scaleMax);
+  const scaleWidth = resolved.scaleMax - resolved.scaleMin;
+  const practicalTieDelta = (PRACTICAL_TIE_DELTA / DEFAULT_SCALE_WIDTH) * scaleWidth;
+  // Allow score-sized roundoff at the inclusive boundary. Cap the allowance relative
+  // to the cutoff so a large origin on a narrow scale cannot merge distinct scores.
+  const scoreMagnitude = Math.max(Math.abs(resolved.scaleMin), Math.abs(resolved.scaleMax));
+  const roundoff = Math.min(
+    Number.EPSILON * scoreMagnitude,
+    Math.sqrt(Number.EPSILON) * practicalTieDelta,
+  );
+  const tieCutoff = practicalTieDelta + roundoff;
 
   const partials = items.map((item) => {
     const adjustedRating =
@@ -351,15 +356,15 @@ export function rankItems(items: ReviewItem[], options: RankingOptions = {}): Ra
 
   const raw = assignRanks(
     partials.map((item, index) => [index, item.rating]),
-    practicalTieDelta,
+    tieCutoff,
   );
   const balanced = assignRanks(
     partials.map((item, index) => [index, item.adjustedRating]),
-    practicalTieDelta,
+    tieCutoff,
   );
   const conservative = assignRanks(
     partials.map((item, index) => [index, item.lowerBound]),
-    practicalTieDelta,
+    tieCutoff,
   );
 
   return {

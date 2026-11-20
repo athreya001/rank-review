@@ -19,8 +19,8 @@ The app then shows two rankings:
 
 - **Balanced rank**: the best estimate after pulling small samples toward the
   typical rating in the set.
-- **Conservative rank**: a cautious lower-bound ranking that favors options with
-  stronger evidence.
+- **Conservative rank** orders options by their adjusted rating after a penalty
+  that decreases as the review count grows.
 
 ## Example
 
@@ -31,8 +31,9 @@ Imagine comparing two products:
 | Small Favorite | 5.0 | 3 |
 | Reliable Choice | 4.6 | 900 |
 
-A raw average ranks `Small Favorite` first. Review Confidence Ranker may rank
-`Reliable Choice` higher because its score is supported by far more reviews.
+The balanced ranking treats these two options as a practical tie. The
+conservative ranking puts `Reliable Choice` first because its 900 reviews
+give it a smaller penalty.
 
 ## How The Ranking Works
 
@@ -43,16 +44,18 @@ At a high level, the app:
 
 1. Estimates a typical rating from the options you entered.
 2. Shrinks low-review options toward that typical rating.
-3. Calculates an approximate cautious lower bound.
-4. Ranks options by both adjusted score and conservative lower bound.
+3. Subtracts a review-count penalty from each adjusted rating, keeping the
+   conservative score within the rating scale.
+4. Ranks options by both adjusted rating and conservative score.
 5. Treats very small score differences as practical ties.
 
 ## Assumptions And Limits
 
 - The average rating and review count are accurate.
 - Reviews are treated as roughly comparable across the options.
-- The lower bound is approximate because individual review-level data is not
-  available.
+- The conservative score is a ranking heuristic. Its penalty uses the review
+  count and prior strength and assumes a standard deviation of one quarter of
+  the rating scale's width.
 - With only one or two options, the automatically estimated typical rating is
   less stable.
 - The app is a decision aid, not a guarantee of product or service quality.

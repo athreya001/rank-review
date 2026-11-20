@@ -69,6 +69,50 @@ describe("rankItems", () => {
     expect(items.map((item) => item.balancedTieGroup)).toEqual([1, 1]);
   });
 
+  it.each([
+    [4.60, 4.54, 1, 1],
+    [4.40, 4.34, 1, 1],
+    [4.6000000001, 4.54, 1, 2],
+    [1004.60, 1004.54, 1001, 1],
+    [1004.6000000001, 1004.54, 1001, 2],
+  ])("ranks %s and %s consistently at the adjusted tie cutoff", (first, second, scaleMin, expectedRank) => {
+    const { items } = rankItems(
+      [
+        { name: "Alpha", rating: first, reviews: 50 },
+        { name: "Beta", rating: second, reviews: 50 },
+      ],
+      { scaleMin, scaleMax: scaleMin + 4 },
+    );
+
+    expect(items[1].balancedRank).toBe(expectedRank);
+    expect(items[1].conservativeRank).toBe(expectedRank);
+  });
+
+  it("keeps distinct ratings separate on a small scale", () => {
+    const { items } = rankItems(
+      [
+        { name: "Alpha", rating: 1e-16, reviews: 50 },
+        { name: "Beta", rating: 0, reviews: 50 },
+      ],
+      { scaleMin: 0, scaleMax: 1e-16, ratingSd: 2.5e-17 },
+    );
+
+    expect(items[1]).toMatchObject({ rawRank: 2, balancedRank: 2, conservativeRank: 2 });
+  });
+
+  it("keeps a representable raw gap above the cutoff separate on a heavily offset scale", () => {
+    const scaleMin = 1e15;
+    const { items } = rankItems(
+      [
+        { name: "Alpha", rating: scaleMin + 2, reviews: 50 },
+        { name: "Beta", rating: scaleMin + 1.875, reviews: 50 },
+      ],
+      { scaleMin, scaleMax: scaleMin + 4 },
+    );
+
+    expect(items[1].rawRank).toBe(2);
+  });
+
   it("uses review counts to set automatic prior strength for larger comparisons", () => {
     const { settings } = rankItems([
       { name: "Alpha", rating: 4.8, reviews: 12 },

@@ -14,7 +14,7 @@
       <header class="app-header">
         <div>
           <h1>Review Confidence Ranker</h1>
-          <p>Compare choices by rating confidence.</p>
+          <p>Compare average ratings and the number of reviews behind them.</p>
         </div>
         <div class="header-actions">
           <button class="button ghost" id="clearButton" type="button">Clear</button>
@@ -75,7 +75,7 @@
               <ul class="assumptions-list">
                 <li>The typical rating is calculated from your options, weighted by review count.</li>
                 <li>Prior strength is chosen automatically from the number of reviews.</li>
-                <li>The conservative score uses a fixed 95% cautious lower bound.</li>
+                <li>The conservative score subtracts a larger penalty when an option has fewer reviews.</li>
               </ul>
             </div>
           </div>
@@ -93,7 +93,7 @@
 
           <div id="resultsContent" class="results-content" hidden>
             <div class="recommendation">
-              <span>Conservative pick</span>
+              <span>Conservative ranking</span>
               <strong id="recommendationText"></strong>
             </div>
 
@@ -110,7 +110,7 @@
                         <th scope="col">Move</th>
                         <th scope="col">Rating</th>
                         <th scope="col">Reviews</th>
-                        <th scope="col">Lower</th>
+                        <th scope="col">Conservative score</th>
                         <th scope="col">Adjusted</th>
                         <th scope="col">Why</th>
                       </tr>
@@ -133,7 +133,7 @@
                         <th scope="col">Rating</th>
                         <th scope="col">Reviews</th>
                         <th scope="col">Adjusted</th>
-                        <th scope="col">Lower</th>
+                        <th scope="col">Conservative score</th>
                         <th scope="col">Why</th>
                       </tr>
                     </thead>

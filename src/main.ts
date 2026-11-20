@@ -230,7 +230,7 @@ function renderRows(body: HTMLTableSectionElement, rows: RankingRow[], mode: "co
               ["Move", row.rankDelta],
               ["Rating", row.rating],
               ["Reviews", row.reviews],
-              ["Lower", row.lowerBound],
+              ["Conservative score", row.lowerBound],
               ["Adjusted", row.adjustedRating],
               ["Why", row.explanation],
             ]
@@ -242,7 +242,7 @@ function renderRows(body: HTMLTableSectionElement, rows: RankingRow[], mode: "co
               ["Rating", row.rating],
               ["Reviews", row.reviews],
               ["Adjusted", row.adjustedRating],
-              ["Lower", row.lowerBound],
+              ["Conservative score", row.lowerBound],
               ["Why", row.explanation],
             ];
 

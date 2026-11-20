@@ -91,10 +91,8 @@ function explanationFor(item: RankedItem, mode: RankingMode, result: RankingResu
     return `${movement}: ${evidence}, and ${priorPullPhrase(item, result.settings.priorMean)}.`;
   }
 
-  const safetyGap = item.adjustedRating - item.lowerBound;
-  return `${movement}: ${evidence}; the lower bound sits ${formatStars(
-    safetyGap,
-  )} below the adjusted score.`;
+  const penalty = item.adjustedRating - item.lowerBound;
+  return `${movement} with ${evidence}. The conservative score is ${formatStars(penalty)} below the adjusted rating.`;
 }
 
 function priorMeanSourceLabel(source: RankingResult["settings"]["priorMeanSource"]): string {
@@ -127,6 +125,15 @@ function rowFor(item: RankedItem, rank: number, mode: RankingMode, result: Ranki
   };
 }
 
+function conservativeHeadline(items: RankedItem[]): string {
+  const leaders = items.filter((item) => item.conservativeRank === 1).map((item) => item.name);
+  if (leaders.length === 0) return "Add options to compare their conservative scores.";
+  if (leaders.length === 1) return `${leaders[0]} ranks first by conservative score.`;
+
+  const names = new Intl.ListFormat("en-AU").format(leaders.sort());
+  return `${names} share first place by conservative score.`;
+}
+
 export function createRankingViewModel(result: RankingResult): RankingViewModel {
   const conservativeItems = [...result.items].sort(
     (left, right) =>
@@ -140,15 +147,12 @@ export function createRankingViewModel(result: RankingResult): RankingViewModel 
       right.adjustedRating - left.adjustedRating ||
       right.lowerBound - left.lowerBound,
   );
-  const safest = conservativeItems[0];
-
   const notes = [
     "Balanced rank is the best estimate after shrinking small samples toward the typical rating.",
-    "Conservative rank is better for high-risk decisions because it ranks by the cautious lower bound.",
     "Typical rating and prior strength are selected automatically from the entered options.",
     "Move compares each method's rank with the raw-average rank.",
     `Treat options within ${formatStars(result.settings.practicalTieDelta)} rating points as a practical tie.`,
-    "The lower bound is approximate because only average rating and review count are used.",
+    "The conservative score is a heuristic based on average ratings and review counts.",
   ];
 
   if (result.settings.twoItemPriorCaveat) {
@@ -160,12 +164,10 @@ export function createRankingViewModel(result: RankingResult): RankingViewModel 
       rowFor(item, item.conservativeRank, "conservative", result),
     ),
     balancedRows: balancedItems.map((item) => rowFor(item, item.balancedRank, "balanced", result)),
-    recommendation: safest
-      ? `${safest.name} is the safer first pick by conservative lower bound.`
-      : "Add options to calculate a safer first pick.",
+    recommendation: conservativeHeadline(conservativeItems),
     notes,
     settings: [
-      ["Conservative confidence", `${(result.settings.confidence * 100).toFixed(1)}% one-sided`],
+      ["Penalty multiplier", formatStars(result.settings.zScore)],
       [
         "Typical rating",
         `${formatStars(result.settings.priorMean)} (${priorMeanSourceLabel(
